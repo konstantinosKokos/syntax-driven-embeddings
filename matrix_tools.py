@@ -1,10 +1,30 @@
 # tools for co-occurrence matrix 
 import numpy as np
+from scipy.spatial.distance import cosine
+from vocabulary_tools import idx_to_words
+
+def construct_similarities(comatrix):
+    '''
+    iterate over a matrix to produce word-pair similarities
+    '''
+    similarities = np.zeros((comatrix.shape[0], comatrix.shape[0]))
+    for ii in range(comatrix.shape[0]):
+        for jj in range(ii, comatrix.shape[0]): # diagonal symmetry - fill only the upper right triangle
+            similarities[ii, jj] = 1 - cosine(comatrix[ii,:], comatrix[jj,:])
+            similarities[jj, ii] = similarities[ii, jj]
+    return similarities
+
+def most_similar(word, vocabulary, reverse_vocabulary, similarities, return_similarities=False):
+    ii = vocabulary[word][2]
+    vector = similarities[ii, :]
+    idx = np.argsort(vector * -1)
+    if return_similarities: return idx_to_words(idx, reverse_vocabulary)
+    return idx_to_words(idx, reverse_vocabulary)
 
 def naive_update(matrix, vocabulary, parsed, window_size=3, ignore_unknown=True):
     # perform the positional co-occurrence counting to update the matrix
     # TODO: allow adaptive window in case of unknown words
-    if matrix.dtype=np.uint16: peak = 65535
+    if matrix.dtype==np.uint16: peak = 65535
     for ii, token in enumerate(parsed):
         lemma = token.lemma_
         if token.pos_ == 'PROPN': pos = 'NOUN'
