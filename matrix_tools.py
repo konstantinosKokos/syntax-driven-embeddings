@@ -60,8 +60,8 @@ def syntactic_update(matrix, vocabulary, parsed, update_method, symmetrical=Fals
 		wordindexes = update_method(vocabulary, token) # indexes to change in the matrix
 		for wordindex in wordindexes:
             if matrix[index, wordindex] < peak: matrix[index, wordindex] += 1
-			if symmetrical:
-				if matrix[wordindex, index] < peak: matrix[wordindex, index] += 1
+            if symmetrical:
+                if matrix[wordindex, index] < peak: matrix[wordindex, index] += 1
     return matrix
 
 def deptree_naive(vocabulary, word):
