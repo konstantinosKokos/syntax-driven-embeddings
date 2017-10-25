@@ -1,11 +1,7 @@
 # tools for co-occurrence matrix
-import spacy
-import pickle
 import numpy as np
+from scipy.spatial.distance import cosine
 from vocabulary_tools import idx_to_words
-
-def cosine(vector1, vector2):
-	return np.dot(vector1, vector2) / np.linalg.norm(vector1) /np.linalg.norm(vector2)
 
 def construct_similarities(comatrix):
     '''
@@ -25,29 +21,22 @@ def most_similar(word, vocabulary, reverse_vocabulary, similarities, return_simi
     if return_similarities: return idx_to_words(idx, reverse_vocabulary)
     return idx_to_words(idx, reverse_vocabulary)
 
-def naive_update(matrix, vocabulary, parsed, window_size=3, ignore_unknown=True):
+def naive_update(matrix, vocabulary, parsed, window_size=3):
 	# perform the positional co-occurrence counting to update the matrix
-	# TODO: allow adaptive window in case of unknown words
-	peak = float("inf")
+	peak = np.inf
 	if matrix.dtype==np.uint16: peak = 65535
 	for ii, token in enumerate(parsed):
-		lemma = token.lemma_
-		if token.pos_ == 'PROPN': pos = 'NOUN'
-		else: pos=token.pos_
-		key = lemma + ' | ' + pos
+		key = token.lemma_
 		if key not in vocabulary.keys(): continue
-		index = vocabulary[key][1]
+		index = vocabulary[key][2]
 		startpoint = max([0, ii-window_size])
 		endpoint = min([len(parsed), ii+window_size+1])
 		span=parsed[startpoint:endpoint]
 		wordindexes = [] # indexes to change in the matrix
 		for jj, word in enumerate(span):
-			wordlemma = word.lemma_
-			if word.pos_ == 'PROPN': wordpos='NOUN'
-			else: wordpos = word.pos_
-			wordkey = wordlemma + ' | ' + wordpos
+			wordkey = word.lemma_
 			if wordkey not in vocabulary.keys(): continue
-			wordindexes.append(vocabulary[wordkey][1])
+			wordindexes.append(vocabulary[wordkey][2])
 		for wordindex in wordindexes:
 			#if index>wordindex: continue
 			#matrix[index_comatrix(matrix, index, wordindex, return_index=True)] += 1
@@ -68,7 +57,7 @@ def syntactic_update(matrix, vocabulary, parsed, update_method, symmetrical=Fals
 	Outputs:
 	- the updated matrix
 	'''
-	peak = float("inf")
+	peak = np.inf
 	if matrix.dtype==np.uint16: peak = 65535
 	if debug: contexts = {w.lemma_: [] for w in parsed if w.lemma_ in vocabulary}
 	else: contexts = {vocabulary[w.lemma_][2]: [] for w in parsed if w.lemma_ in vocabulary}
