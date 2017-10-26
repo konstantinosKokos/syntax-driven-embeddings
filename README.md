@@ -1,1 +1,1 @@
-# syntax-driven-vae
+# syntax-driven-embeddings
