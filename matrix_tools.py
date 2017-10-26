@@ -111,7 +111,9 @@ def deptree_headchildren(vocabulary, token, debug=False):
 	if token.dep_ != 'prep':
 		for child in token.children:
 			if child.dep_ == 'prep': # if token forms the head of a preposition, we will directly connect it to the object of the preposition, skipping the preposition itself
-				child = list(child.children)[0]
+				grandchildren = list(child.children)
+				if len(grandchildren) > 0:
+					child = grandchildren[0]
 			addWord(child, wordindexes, vocabulary, debug)
 			conjunct = next((w for w in child.children if w.dep_ == 'conj'), None) # Add potential conjuncts of child to the context as well
 			while conjunct != None:
@@ -146,7 +148,9 @@ def deptree_noun_chunks(vocabulary, token, debug=False):
 			for child in root.children:
 				if child not in nc:
 					if child.dep_ == 'prep': # if token forms the head of a preposition, we will directly connect it to the object(s) of the preposition, skipping the preposition itself
-						child = list(child.children)[0]
+						grandchildren = list(child.children)
+						if len(grandchildren) > 0:
+							child = grandchildren[0]
 					addWord(child, wordindexes, vocabulary, debug)
 					conjunct = next((w for w in child.children if w.dep_ == 'conj'), None) # Add potential conjuncts of child to the context as well
 					while conjunct != None:
