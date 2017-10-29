@@ -129,13 +129,6 @@ def summarize(bless):
         if bless.iloc[ii]['category'] == 'random-v': randomvs.append(bless.iloc[ii]['score'])
         if bless.iloc[ii]['category'] == 'random-n': randomns.append(bless.iloc[ii]['score'])
     words[currentword] = [attributes, coords, events, meros, hypers, randomjs, randomvs, randomns]
-
-    '''for word in words:
-        centered_vectors = []
-        for vector in words[word]:
-            centered_vectors.append(center_and_mean(vector))
-        words[word] = centered_vectors
-    '''
     
     for word in words:
         vector = []
@@ -143,23 +136,12 @@ def summarize(bless):
             newvalue = max(words[word][ii])
             vector.append(newvalue)
         words[word] = vector
-    '''
-    attributes = [max(words[word][0]) for word in words]
-    coords = [max(words[word][1]) for word in words]
-    events = [max(words[word][2]) for word in words]
-    meros = [max(words[word][3]) for word in words]
-    hypers = [max(words[word][4]) for word in words]
-    randomjs = [max(words[word][5]) for word in words]
-    randomvs = [max(words[word][6]) for word in words]
-    randomns = [max(words[word][7]) for word in words]
     
     for ii, word in enumerate(words):
-        vector = [attributes[ii], coords[ii], events[ii], meros[ii], hypers[ii], randomjs[ii], randomvs[ii], randomns[ii]]
-        vector = center_and_mean(vector)
+        vector = center_and_mean(words[word])
         words[word] = vector
-    '''
-    
-    return words#, attributes, coords, events, meros, hypers, randoms
+        
+    return words
             
 def center_and_mean(vector):
     vector = vector - np.mean(vector)
