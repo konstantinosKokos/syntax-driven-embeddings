@@ -5,9 +5,16 @@ from matrix_tools import pair_similarity
 import numpy as np
 from tqdm import tqdm_notebook
 
+'''
+A variety of format-specific tools that we use to perform the evaluation of our models.
+References:
+1) 'How we BLESSed distributional semantic evaluation' - Baroni, Lenci 
+2) 'A solution to Plato's problem: The latent semantic analysis theory of the acquisition, induction, and representation of knowledge' - Landauer, Dumais
+'''
+
 def construct_toefl(filepath='/home/jovyan/kokos-playground/Data/TOEFL.csv'):
     '''
-    description goes here
+    construct_toefl: given a path towards a csv file describing a TOEFL test, construct the corresponding DataFrame	
     '''
     with open(filepath, 'r') as f:
         r = csv.reader(f)
@@ -18,7 +25,7 @@ def construct_toefl(filepath='/home/jovyan/kokos-playground/Data/TOEFL.csv'):
 
 def reduce_toefl(tests, minimum, vocabulary):
     '''
-    description goes here
+    reduce_toefl: given a TOEFL DataFrame, a vocabulary and a minimum occurrence constraint, remove invalid entries
     '''
     reduced = copy.deepcopy(tests)
     to_delete = []
@@ -35,7 +42,7 @@ def reduce_toefl(tests, minimum, vocabulary):
         
 def multifold_test(tests, similarities, vocabulary, split=10):
     '''
-    description goes here
+    multifold_tests: given a TOEFL DataFrame, a similarities matrix and a vocabulary, split into a number of mutually exclusive tests for variance control, perform the evaluations and return results
     '''
     results = np.zeros([split])
     current_index = 0
@@ -64,7 +71,7 @@ def multifold_test(tests, similarities, vocabulary, split=10):
     
 def construct_bless(pathfile, vocabulary, similarities):
     '''
-    description goes here
+    construct_bless: given a path towards a BLESS test csv, a vocabulary and a similarities matrix, construct the corresponding DataFrame
     '''
     with open(pathfile, 'r') as f:
         z = csv.reader(f, delimiter='\t')
@@ -83,20 +90,20 @@ def construct_bless(pathfile, vocabulary, similarities):
         bless.set_value(ii, 'score', pair_similarity(bless.iloc[ii]['root'], bless.iloc[ii]['word'], vocabulary, similarities))
     return bless
 
-def reduce_bless(bless, vocabulary):
+def reduce_bless(bless, vocabulary, minimum=40):
     '''
-    description goes here
+    reduce_bless: given a BLESS test DataFrame and a vocabulary, remove root words that occurr less than the minimum allowed number of times and comparison tokens that are OOV
     '''
     to_delete = []
     for ii in range(len(bless)):
-        if bless.iloc[ii]['root'] not in vocabulary.keys() or vocabulary[bless.iloc[ii]['root']][0]< 40 or bless.iloc[ii]['word'] not in vocabulary.keys(): to_delete.append(ii)
+        if bless.iloc[ii]['root'] not in vocabulary.keys() or vocabulary[bless.iloc[ii]['root']][0]< minimum or bless.iloc[ii]['word'] not in vocabulary.keys(): to_delete.append(ii)
     bless = bless.drop(bless.index[to_delete])
     bless.index = [i for i in range(len(bless))]
     return bless
 
 def summarize(bless):
     '''
-    description goes here
+    summarize: given a BLESS DataFrame, return a dictionary that maps root words to centered and mean vectors
     '''
     words = {}
     attributes = []
@@ -144,5 +151,8 @@ def summarize(bless):
     return words
             
 def center_and_mean(vector):
+    '''
+    center_and_mean: given a vector, return its zero-mean, unit-norm equivallent
+    '''
     vector = vector - np.mean(vector)
     return vector/ np.std(vector, ddof=1)
